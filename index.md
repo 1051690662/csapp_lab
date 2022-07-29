@@ -173,13 +173,14 @@ End of assembler dump.
 ```
 接下来，<+41>将rax置0，<+46>调用<__isoc99_sscanf@plt>,<+54>判断eax是否大于5。<+56>若大于，<+61>则释放空间,返回<+65>;否则，<+56>调用<explode_bomb>，爆炸。由此，sscanf函数返回了输入字符串的个数，因此推断出，我们输入的数（因为类型为int）必须大于等于6个。
 因此可以大致推出read_six_number函数的原型等价为
+```markdown
 Void read_six_number(char *receive,int *num){
 Char *style=“%d %d %d %d %d %d”
 	 int re=sscanf（receive,style,&num[0] ,&num[1] ,&num[2] ,&num[3] ,&num[4] ,&num[5] ,&num[6]）;
 if （re<5）
 	explode_bomb（）；
 }
-
+```
 
 返回phase_2
 ```markdown
@@ -202,16 +203,72 @@ if （re<5）
    0x0000000000400f3a <+62>:    jmp    0x400f17 <phase_2+27>
 ```
 此时rsp的栈为
-
-
+![image](https://github.com/1051690662/csapp_lab/tree/gh-pages/11.jpg)
+<+14>若rsp指向的内存值为1，<+52>则跳转，否则，<+20>爆炸。
 
 ```markdown
-```
-```markdown
-```
-```markdown
-```
+0x0000000000400f30 <+52>:    lea    0x4(%rsp),%rbx
+   0x0000000000400f35 <+57>:    lea    0x18(%rsp),%rbp
 
+```
+此时，指向为
+![image](https://github.com/1051690662/csapp_lab/tree/gh-pages/22.jpg)
+注：c中不检查数组下标越界，因此rbp可以指向num[6]。
+
+```markdown
+0x0000000000400f17 <+27>:    mov    -0x4(%rbx),%eax
+   0x0000000000400f1a <+30>:    add    %eax,%eax
+   0x0000000000400f1c <+32>:    cmp    %eax,(%rbx)
+   0x0000000000400f1e <+34>:    je     0x400f25 <phase_2+41>
+   0x0000000000400f20 <+36>:    call   0x40143a <explode_bomb>
+```
+<+27>Eax=num[0]
+<+30>Eax=2*num[0]
+<+32>if（eax==(rbx)  2*num[0]==num[1]）
+<+34>相同，goto<+41>
+ 	Else	
+		<+36>不同，爆炸
+
+```markdown
+0x0000000000400f25 <+41>:    add    $0x4,%rbx
+   0x0000000000400f29 <+45>:    cmp    %rbp,%rbx
+   0x0000000000400f2c <+48>:    jne    0x400f17 <phase_2+27>
+   0x0000000000400f2e <+50>:    jmp    0x400f3c <phase_2+64>
+
+```
+<+41>rbx指向下一个num[2]
+<+45>if（rbp==rbx  当前rbp是否指向末尾num[6]？）
+			<+50>Goto <+64>结束判断，跳出循环
+Else	
+<+48>Goto <+27>·
+依次循环，综上可逆向出phase_2源码等价为：
+```markdown
+Void phase_2(char* receive) {
+	Int num[6]=receive;
+	Read_six_number(receive,num);
+I	nt *start=&num[0];
+	Int *end=&num[6]
+	If(num[0]!=1)
+		explode_bomb();
+	While(start<end){
+		If ((*start)*2!=*(start+1))
+			Explode_bomb();
+		else
+			Start++;
+	}
+}
+```		
+以上跟符合反汇编的思路，可简化为：
+```markdown
+Void phase_2(char* receive) {
+	Int num[6]=receive;
+	Read_six_number(receive,num);
+	For(int i=0;i<6;i++)
+		If(num[i+1]!=num[i]*2)
+			explode_bomb();
+}
+```
+num[0]=1,后面是前面的2倍，因此答案为1 2 4 8 16 32。
 
 
 
