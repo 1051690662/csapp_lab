@@ -1,4 +1,4 @@
-## csapp lab2 bomb
+## csapp lab2 bomb 《深入理解计算机系统》0基础超详细解析
 ### 总览
 总共有六个炸弹，需要我们一一拆除。题目提供了可执行文件bomb与bomb.c，.c文件中只提供了主函数。
 ## phase_1
@@ -356,6 +356,142 @@ End of assembler dump.
 <+118>将0x137赋值给eax，<+123>比较传入的第二个数是否与其相等,若相等，<+134>则释放函数空间，<+138>返回；<+129>否则爆炸。因此，其中一组答案为：
 1 311
 如法炮制，所有答案有：0 207；1 311；2 707；3 256；4 389；5 206；6 682；7 327；
+
+## phase_4
+```
+(gdb) disas phase_4
+Dump of assembler code for function phase_4:
+   0x000000000040100c <+0>:     sub    $0x18,%rsp
+   0x0000000000401010 <+4>:     lea    0xc(%rsp),%rcx
+   0x0000000000401015 <+9>:     lea    0x8(%rsp),%rdx
+   0x000000000040101a <+14>:    mov    $0x4025cf,%esi
+   0x000000000040101f <+19>:    mov    $0x0,%eax
+   0x0000000000401024 <+24>:    call   0x400bf0 <__isoc99_sscanf@plt>
+   0x0000000000401029 <+29>:    cmp    $0x2,%eax
+   0x000000000040102c <+32>:    jne    0x401035 <phase_4+41>
+
+   0x000000000040102e <+34>:    cmpl   $0xe,0x8(%rsp)
+   0x0000000000401033 <+39>:    jbe    0x40103a <phase_4+46>
+   0x0000000000401035 <+41>:    call   0x40143a <explode_bomb>
+
+   0x000000000040103a <+46>:    mov    $0xe,%edx
+   0x000000000040103f <+51>:    mov    $0x0,%esi
+   0x0000000000401044 <+56>:    mov    0x8(%rsp),%edi
+   0x0000000000401048 <+60>:    call   0x400fce <func4>
+
+   0x000000000040104d <+65>:    test   %eax,%eax
+   0x000000000040104f <+67>:    jne    0x401058 <phase_4+76>
+   0x0000000000401051 <+69>:    cmpl   $0x0,0xc(%rsp)
+   0x0000000000401056 <+74>:    je     0x40105d <phase_4+81>
+   0x0000000000401058 <+76>:    call   0x40143a <explode_bomb>
+--Type <RET> for more, q to quit, c to continue without paging--
+   0x000000000040105d <+81>:    add    $0x18,%rsp
+   0x0000000000401061 <+85>:    ret    
+End of assembler dump.
+
+```
+基本套路与phase_2一致。
+<+0>~<+32>易知（详见phase_2），传入两个int数。
+<+34>~<+41>易知，第一个参数的值<15
+<+46>~<+60>得，edx=15，esi=0；edi存储传入的第一个数，也就是需要我们求的数。随后调用函数<func4>
+反汇编<func4>
+```
+(gdb) disas func4  
+
+Dump of assembler code for function func4:
+   0x0000000000400fce <+0>:     sub    $0x8,%rsp
+   0x0000000000400fd2 <+4>:     mov    %edx,%eax
+   0x0000000000400fd4 <+6>:     sub    %esi,%eax
+   0x0000000000400fd6 <+8>:     mov    %eax,%ecx
+
+   0x0000000000400fd8 <+10>:    shr    $0x1f,%ecx
+   0x0000000000400fdb <+13>:    add    %ecx,%eax
+   0x0000000000400fdd <+15>:    sar    %eax
+
+   0x0000000000400fdf <+17>:    lea    (%rax,%rsi,1),%ecx
+   0x0000000000400fe2 <+20>:    cmp    %edi,%ecx
+   0x0000000000400fe4 <+22>:    jle    0x400ff2 <func4+36>
+   0x0000000000400fe6 <+24>:    lea    -0x1(%rcx),%edx
+   0x0000000000400fe9 <+27>:    call   0x400fce <func4>
+   0x0000000000400fee <+32>:    add    %eax,%eax
+   0x0000000000400ff0 <+34>:    jmp    0x401007 <func4+57>
+   0x0000000000400ff2 <+36>:    mov    $0x0,%eax
+
+   0x0000000000400ff7 <+41>:    cmp    %edi,%ecx
+   0x0000000000400ff9 <+43>:    jge    0x401007 <func4+57>
+   0x0000000000400ffb <+45>:    lea    0x1(%rcx),%esi
+   0x0000000000400ffe <+48>:    call   0x400fce <func4>
+
+   0x0000000000401003 <+53>:    lea    0x1(%rax,%rax,1),%eax
+--Type <RET> for more, q to quit, c to continue without paging--
+   0x0000000000401007 <+57>:    add    $0x8,%rsp
+   0x000000000040100b <+61>:    ret    
+End of assembler dump.
+	
+```
+<+4>Eax=edx=15,
+<+6>eax=eax-esi=15-0=15;
+<+8>ecx=eax=15
+<+10>ecx=ecx>>31；
+<+13>eax=eax+ecx=15+0=15；
+<+15>eax=eax>>1=7
+<+10>~<+15>等价为 eax=15，ecx=15的初值下，执行：eax=((ecx>>31)+eax)>>1，eax=7
+<+17>ecx=1*rsi+rax=0+7=7
+<+20>将传入的edi与ecx比较，若大于，则执行<+24>后执行<+27>func4函数，此处应该是个递归调用，具体含义不明，但是可以确定的是若想继续执行完成该函数，调用一定次数后们一定有edi<=ecx，于是跳转到<+36>。
+<+41>~<+48>同上述原理，一定有ecx>=edi时，跳转到<+57>结束函数。
+综合上述，当edi=ecx时，func4函数调用结束。因此edi为7；
+此后返回函数phase_4
+<+65>~<+85>易知：第二个参数为0。
+故本题答案为7 0。
+	
+## phase_5
+```
+(gdb) disas phase_5
+Dump of assembler code for function phase_5:
+   0x0000000000401062 <+0>:     push   %rbx
+   0x0000000000401063 <+1>:     sub    $0x20,%rsp
+   0x0000000000401067 <+5>:     mov    %rdi,%rbx
+   0x000000000040106a <+8>:     mov    %fs:0x28,%rax
+   0x0000000000401073 <+17>:    mov    %rax,0x18(%rsp)
+   0x0000000000401078 <+22>:    xor    %eax,%eax
+   0x000000000040107a <+24>:    call   0x40131b <string_length>
+   0x000000000040107f <+29>:    cmp    $0x6,%eax
+   0x0000000000401082 <+32>:    je     0x4010d2 <phase_5+112>
+   0x0000000000401084 <+34>:    call   0x40143a <explode_bomb>
+   0x0000000000401089 <+39>:    jmp    0x4010d2 <phase_5+112>
+   0x000000000040108b <+41>:    movzbl (%rbx,%rax,1),%ecx
+   0x000000000040108f <+45>:    mov    %cl,(%rsp)
+
+   0x0000000000401092 <+48>:    mov    (%rsp),%rdx
+   0x0000000000401096 <+52>:    and    $0xf,%edx
+
+   0x0000000000401099 <+55>:    movzbl 0x4024b0(%rdx),%edx
+   0x00000000004010a0 <+62>:    mov    %dl,0x10(%rsp,%rax,1)
+   0x00000000004010a4 <+66>:    add    $0x1,%rax
+   0x00000000004010a8 <+70>:    cmp    $0x6,%rax
+   0x00000000004010ac <+74>:    jne    0x40108b <phase_5+41>
+--Type <RET> for more, q to quit, c to continue without paging--
+   0x00000000004010ae <+76>:    movb   $0x0,0x16(%rsp)
+   0x00000000004010b3 <+81>:    mov    $0x40245e,%esi
+   0x00000000004010b8 <+86>:    lea    0x10(%rsp),%rdi
+   0x00000000004010bd <+91>:    call   0x401338 <strings_not_equal>
+   0x00000000004010c2 <+96>:    test   %eax,%eax
+   0x00000000004010c4 <+98>:    je     0x4010d9 <phase_5+119>
+   0x00000000004010c6 <+100>:   call   0x40143a <explode_bomb>
+   0x00000000004010cb <+105>:   nopl   0x0(%rax,%rax,1)
+   0x00000000004010d0 <+110>:   jmp    0x4010d9 <phase_5+119>
+   0x00000000004010d2 <+112>:   mov    $0x0,%eax
+   0x00000000004010d7 <+117>:   jmp    0x40108b <phase_5+41>
+   0x00000000004010d9 <+119>:   mov    0x18(%rsp),%rax
+   0x00000000004010de <+124>:   xor    %fs:0x28,%rax
+   0x00000000004010e7 <+133>:   je     0x4010ee <phase_5+140>
+   0x00000000004010e9 <+135>:   call   0x400b30 <__stack_chk_fail@plt>
+   0x00000000004010ee <+140>:   add    $0x20,%rsp
+   0x00000000004010f2 <+144>:   pop    %rbx
+   0x00000000004010f3 <+145>:   ret    
+End of assembler dump.
+
+```
 
 ## Welcome to GitHub Pages
 
