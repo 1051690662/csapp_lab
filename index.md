@@ -849,12 +849,16 @@ else
 	
 到此，该题结束。
 综上，输入可以逆推。要想不触发爆炸函数，第五部分的节点指向必须为节点值从大到小排列，根据⑥
+	
+```
 <node1>0x6032d0 =0x14c
 <node2>0x6032e0 =0xa8    
 <node3>0x6032f0 =0x39c   
 <node4>0x603300=0x2b3   
 <node5>0x603310 =0x1dd   
 <node6>0x603320 =0x1bb
+```
+	
 因为0x39c>0x2b3>0x1dd>0x1bb>0x14c>0xa8。因此节点指向为：dizhi[0]=0x6032f0，0x6032f0=&node[3]，*（0x6032f8）=0x603300依次类推等价伪代码为：dizhi[0]=0x6032f0，&（node[3].next）=0x6032f8，node[3].next=&node[4]，node[4].next=&node[5] ，node[5].next=&node[6] ，node[6].next=&node[1] ，node[1].next=&node[2]。
 因此dizhi[0]=&node[3]，dizhi[1]=&node[4] ，dizhi[2]=&node[5] ，dizhi[3]=&node[6] ，dizhi[4]=&node[1] ，dizhi[5]=&node[2]。
 根据第三部分知道，dizhi数组的值是通过以num数组的值做偏移量，在0x6032d0为基址不断解引得来的。因此num[i]的值决定了dizhi[i]存储的是第几个node。因此num[0]=3，num[1]=4，num[2]=5，num[3]=6，num[4]=1，num[5]=2。到此为止，仍不是最初答案，该部分是经历了第二部分后的值，所以要还原最初的值，还需要用7减。因此最开始的值为num[6]={4,3,2,1,6,5}。
