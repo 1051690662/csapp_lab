@@ -520,8 +520,7 @@ End of assembler dump.
 只需将上述每个字符中任选一个，拼合即为正确答案。如：ionefg为一个答案。
 
 ## phase_6
-```
-	Phase_6
+```markdown
 (gdb) disas phase_6 
 Dump of assembler code for function phase_6:
    0x00000000004010f4 <+0>:     push   %r14
@@ -618,10 +617,9 @@ Dump of assembler code for function phase_6:
    0x0000000000401201 <+269>:   pop    %r14
    0x0000000000401203 <+271>:   ret    
 End of assembler dump.
-
 ```
 第一部分<+0>~<+95>
-```
+```markdown
 	(gdb) disas phase_6 
 Dump of assembler code for function phase_6:
    0x00000000004010f4 <+0>:     push   %r14
@@ -673,7 +671,7 @@ Dump of assembler code for function phase_6:
 接下来，到了<+89>r13+=4，goto<+32>rbp=r13,因此rbp指向下一个，解释了④。
 随后重复上述循环。
 综上，此处代码等价为以下c语言。其中i=r12；j=ebx。⑤处的num[i]用num[r13]索引，⑥处的num[i]用rsp+rax*4索引，num[j]用rbp索引。
-```
+```markdown
 for(int i=0;i<6;i++){
 if(0<num[i] && num[i]<6){⑤
 	for(int j=i;j<6;j++)
@@ -686,7 +684,7 @@ explode_bomb();
 ```
 第二部分
 <+95>~<+121>
-```
+```markdown
  0x0000000000401153 <+95>:    lea    0x18(%rsp),%rsi
    0x0000000000401158 <+100>:   mov    %r14,%rax
    0x000000000040115b <+103>:   mov    $0x7,%ecx
@@ -698,13 +696,13 @@ explode_bomb();
    0x000000000040116d <+121>:   jne    0x401160 <phase_6+108>	
 ```	
 这一部分比较容易，不赘述。过程等价为：
-```	
+```markdown	
 for(int i=0;i<6;i++)
 	num[i]=7-num[i];
 ```
 接下来到了第三部分，比较繁琐，也是本题的核心，有一定的理解难度（不知道结果的情况下）。
 <+123>~<+181>
-```
+```markdown
  0x000000000040116f <+123>:   mov    $0x0,%esi
 --Type <RET> for more, q to quit, c to continue without paging--
    0x0000000000401174 <+128>:   jmp    0x401197 <phase_6+163>
@@ -729,19 +727,19 @@ for(int i=0;i<6;i++)
 <+148>*（0x20+rsp+rsi*2）=rdx根据上一部分的经验，rsp是基地址，rsi是偏移量，又添加了0x20的常偏移量，因此这是一个新的数组，我们假设数组名为dizhi，我们查看该地址。<+153>~<+157>是否到达dizhi末，即num是否被遍历完。若遍历完该部分结束。
 随后来到了<+163>ecx=rsp+rsi*1，此处更新了ecx的值，即ecx=num[rsi]，<+166>与1比较，现在我们讨论当num[rsi]不等于1时发生了什么。<+171>eax=1，<+176>edx=0x6032d0设置完两个初值后，来到了<+130>此处rdx=*（rdx+8）
 我们查看地址rdx+8，即0x6032d0+8=0x6032d8
-```
+```markdown
 	(gdb) x/a 0x6032d8
 0x6032d8 <node1+8>:     0x6032e0 <node2>
 ```
 	发现他的值为0x6032e0，似乎也是一个地址，也就是说此时的rdx=0x6032e0。
 <+134>~<+139>分析得，每循环一次eax的值就+1，rdx再次重复上述操作，即新的rdx=将原rdx的值+8后作为地址去解引。直到ecx=eax，跳转到<+148>将dizhi[rsi]=rdx。在第二轮时，
-```
+```markdown
 	(gdb) x/a 0x6032e8
 0x6032e8 <node2+8>:     0x6032f0 <node3>
 
 ```
 	我们发现，rdx+8再索引总是对应了一个新的地址值，因此我们试着尝试查看最初0x6032d0附近的值
-```
+```markdown
 	⑥(gdb) x /25w 0x6032d0
 0x6032d0 <node1>:       0x14c   0x1     0x6032e0 <node2>        0x0
 0x6032e0 <node2>:       0xa8    0x2     0x6032f0 <node3>        0x0
@@ -754,7 +752,7 @@ for(int i=0;i<6;i++)
 ```
 我们以一字的间隔去解释存储值时发现，该结构存储了2个int和一个地址，而存储的地址又恰好指向下一个节点的地址。该结构为链表。
 数据结构为 
-```
+```markdown
 typedef struct Link{
 Int val；
 Int num；
@@ -769,7 +767,7 @@ node[2].next的地址为：0x6032e8
 依次类推
 发现，rdx存储的是指向某个节点的地址。
 因此与该部分作用等价的伪代码为
-```
+```markdown
 Node[]={0x6032d0,0x6032e0,0x6032f0,0x603300,0x603310,0x603320};
 for(int i=0;i<6;i++)
 	if(num[i]==1)
@@ -782,7 +780,7 @@ for(int i=0;i<6;i++)
 		     
 来到了第四部分,该部分比较考察基本功且较抽象，但是一步步画出栈即可轻松理解。
 <+183>~<+220>
-```
+```markdown
 	0x00000000004011ab <+183>:   mov    0x20(%rsp),%rbx
    0x00000000004011b0 <+188>:   lea    0x28(%rsp),%rax
    0x00000000004011b5 <+193>:   lea    0x50(%rsp),%rsi
@@ -798,14 +796,14 @@ for(int i=0;i<6;i++)
 ```
 	dizhi数组的值分别指向一个节点的地址，而节点的地址+8就是存储该节点next指针的地址。该部分的作用是，将dizhi[i]所对应的节点的next指针，指向dizhi[i+]
 等价伪代码为：
-```
+```markdown
 For(int i=0;i<6;i++)
 	*(dizhi[i]+8)=dizhi[i+1]
 ```
 一直到此，输入的值究竟是什么仍未有头绪。
 		     
 第五部分<+222>~< +257>
-```
+```markdown
 	0x00000000004011d2 <+222>:   movq   $0x0,0x8(%rdx)
    0x00000000004011da <+230>:   mov    $0x5,%ebp
    0x00000000004011df <+235>:   mov    0x8(%rbx),%rax
@@ -821,7 +819,7 @@ For(int i=0;i<6;i++)
 <+222>末尾节点的next设为NULL（0）
 而rbx一直是dizhi[0]的值未改变，该部分的作用就是从索引节点地址=dizhi[0]的节点，将该节点的val与下一节点的val比较，若大于则继续，否则爆炸。
 因此等价该部分的伪代码为
-```
+```markdown
 For(Link* now=dizhi[0]；now；now=now->next)
 If (now.val > now.next.val)
 	Continue;
@@ -845,41 +843,3 @@ else
 
 
 
-
-## Welcome to GitHub Pages
-
-You can use the [editor on GitHub](https://github.com/1051690662/csapp_lab/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/1051690662/csapp_lab/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
