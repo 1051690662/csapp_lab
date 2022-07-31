@@ -203,7 +203,7 @@ if （re<5）
    0x0000000000400f3a <+62>:    jmp    0x400f17 <phase_2+27>
 ```
 此时rsp的栈为
-![image](https://github.com/1051690662/csapp_lab/tree/gh-pages/11.jpg)
+![image1](https://github.com/1051690662/csapp_lab/blob/gh-pages/11.jpg?raw=true)
 <+14>若rsp指向的内存值为1，<+52>则跳转，否则，<+20>爆炸。
 
 ```markdown
@@ -212,7 +212,7 @@ if （re<5）
 
 ```
 此时，指向为
-![image](https://github.com/1051690662/csapp_lab/tree/gh-pages/22.jpg)
+![image2](https://github.com/1051690662/csapp_lab/blob/gh-pages/22.jpg?raw=true)
 注：c中不检查数组下标越界，因此rbp可以指向num[6]。
 
 ```markdown
@@ -270,7 +270,92 @@ Void phase_2(char* receive) {
 ```
 num[0]=1,后面是前面的2倍，因此答案为1 2 4 8 16 32。
 
+## phase_3
+```
+Dump of assembler code for function phase_3:
+   0x0000000000400f43 <+0>:     sub    $0x18,%rsp
+   0x0000000000400f47 <+4>:     lea    0xc(%rsp),%rcx
+   0x0000000000400f4c <+9>:     lea    0x8(%rsp),%rdx
+   0x0000000000400f51 <+14>:    mov    $0x4025cf,%esi
+   0x0000000000400f56 <+19>:    mov    $0x0,%eax
+   0x0000000000400f5b <+24>:    call   0x400bf0 <__isoc99_sscanf@plt>
+   0x0000000000400f60 <+29>:    cmp    $0x1,%eax
+   0x0000000000400f63 <+32>:    jg     0x400f6a <phase_3+39>
+   0x0000000000400f65 <+34>:    call   0x40143a <explode_bomb>
+   0x0000000000400f6a <+39>:    cmpl   $0x7,0x8(%rsp)
+   0x0000000000400f6f <+44>:    ja     0x400fad <phase_3+106>
+   0x0000000000400f71 <+46>:    mov    0x8(%rsp),%eax
+   0x0000000000400f75 <+50>:    jmp    *0x402470(,%rax,8)
+   0x0000000000400f7c <+57>:    mov    $0xcf,%eax
+   0x0000000000400f81 <+62>:    jmp    0x400fbe <phase_3+123>
+   0x0000000000400f83 <+64>:    mov    $0x2c3,%eax
+   0x0000000000400f88 <+69>:    jmp    0x400fbe <phase_3+123>
+   0x0000000000400f8a <+71>:    mov    $0x100,%eax
+   0x0000000000400f8f <+76>:    jmp    0x400fbe <phase_3+123>
+   0x0000000000400f91 <+78>:    mov    $0x185,%eax
+--Type <RET> for more, q to quit, c to continue without paging--  
+   0x0000000000400f96 <+83>:    jmp    0x400fbe <phase_3+123>
+   0x0000000000400f98 <+85>:    mov    $0xce,%eax
+   0x0000000000400f9d <+90>:    jmp    0x400fbe <phase_3+123>
+   0x0000000000400f9f <+92>:    mov    $0x2aa,%eax
+   0x0000000000400fa4 <+97>:    jmp    0x400fbe <phase_3+123>
+   0x0000000000400fa6 <+99>:    mov    $0x147,%eax
+   0x0000000000400fab <+104>:   jmp    0x400fbe <phase_3+123>
+   0x0000000000400fad <+106>:   call   0x40143a <explode_bomb>
+   0x0000000000400fb2 <+111>:   mov    $0x0,%eax
+   0x0000000000400fb7 <+116>:   jmp    0x400fbe <phase_3+123>
+   0x0000000000400fb9 <+118>:   mov    $0x137,%eax
+   0x0000000000400fbe <+123>:   cmp    0xc(%rsp),%eax
+   0x0000000000400fc2 <+127>:   je     0x400fc9 <phase_3+134>
+   0x0000000000400fc4 <+129>:   call   0x40143a <explode_bomb>
+   0x0000000000400fc9 <+134>:   add    $0x18,%rsp
+   0x0000000000400fcd <+138>:   ret    
+End of assembler dump.
 
+```
+此题与phase_2类似，<+0>开辟空间，传进来的两个值存放在栈中，用<+4>rcx，<+9>rdx指向这两个值。<+14>发现常地址，查看 
+```
+(gdb) x /s 0x4025cf
+0x4025cf:       "%d %d"
+
+0x0000000000400f56 <+19>:    mov    $0x0,%eax
+   0x0000000000400f5b <+24>:    call   0x400bf0 <__isoc99_sscanf@plt>
+   0x0000000000400f60 <+29>:    cmp    $0x1,%eax
+   0x0000000000400f63 <+32>:    jg     0x400f6a <phase_3+39>
+   0x0000000000400f65 <+34>:    call   0x40143a <explode_bomb>
+
+
+```
+结合<+19>给eax置0，调用<+24>sscanf函数，<+29>sscanf函数返回的值存储在eax中，与1比较。<+34>若小于1爆炸，否则继续。发现与phase_2套路一致，取传入的数需要大于两个，且只取前两个int类型数。
+
+```
+0x0000000000400f6a <+39>:    cmpl   $0x7,0x8(%rsp)
+   0x0000000000400f6f <+44>:    ja     0x400fad <phase_3+106>
+   0x0000000000400f71 <+46>:    mov    0x8(%rsp),%eax
+   0x0000000000400f75 <+50>:    jmp    *0x402470(,%rax,8)
+0x0000000000400fad <+106>:   call   0x40143a <explode_bomb>
+
+```
+<+39>将第一个数的值与7比，<+106>若大于爆炸，<+46>否则继续，将第一个数的值放入eax。因此第一个数值的范围为0-7。若小于0就往回跳了
+<+50>跳转到将eax的值*8加上地址0x402470后得到的新地址所对应的内存值。例若eax=1，则新地址为0x402478.查看其对应的内存值：
+```
+(gdb) x /a 0x402478
+0x402478:       0x400fb9 <phase_3+118>
+
+```
+即跳转到0x400fb9
+```
+0x0000000000400fb9 <+118>:   mov    $0x137,%eax
+   0x0000000000400fbe <+123>:   cmp    0xc(%rsp),%eax
+   0x0000000000400fc2 <+127>:   je     0x400fc9 <phase_3+134>
+   0x0000000000400fc4 <+129>:   call   0x40143a <explode_bomb>
+   0x0000000000400fc9 <+134>:   add    $0x18,%rsp
+   0x0000000000400fcd <+138>:   ret    
+
+```
+<+118>将0x137赋值给eax，<+123>比较传入的第二个数是否与其相等,若相等，<+134>则释放函数空间，<+138>返回；<+129>否则爆炸。因此，其中一组答案为：
+1 311
+如法炮制，所有答案有：0 207；1 311；2 707；3 256；4 389；5 206；6 682；7 327；
 
 ## Welcome to GitHub Pages
 
