@@ -1,11 +1,11 @@
 总体概览
 
-
+![image1](https://github.com/1051690662/csapp_lab/blob/gh-pages/33.png?raw=true)
 
 第一部分，integer
 
 要求
-
+```markdown
 1. Integer constants 0 through 255 (0xFF), inclusive. You are
       not allowed to use big constants such as 0xffffffff.
   2. Function arguments and local variables (no global variables).
@@ -32,6 +32,8 @@
   2. Performs right shifts arithmetically.
   3. Has unpredictable behavior when shifting if the shift amount
      is less than 0 or greater than 31.
+
+```
 可以使用：& ^ | + << >> ~ ！，常量0-255，int数据类型，操作数不能超过每题的max ops
 
 不可以使用：任何控制语句：if while for switch等，宏，函数，&& || - ？等，数组，结构体，除int外的任何数据类型
@@ -42,6 +44,7 @@
 
 题意：使用~！对xy实现位级的异或运算
 
+```markdown
 /* 
  * bitXor - x^y using only ~ and & 
  *   Example: bitXor(4, 5) = 1
@@ -53,6 +56,8 @@ int bitXor(int x, int y) {
  
   return (~(x & y)) & (~(~x & ~y));
 }
+```
+
 解：
 
 列出xy真值表
@@ -76,9 +81,9 @@ x y result
 (~(~x&~y））&(~（x&y）)
 
 2.int tmin(void)
-
 题意：返回二进制最小数
 
+```markdown
 /* 
  * tmin - return minimum two's complement integer 
  *   Legal ops: ! ~ & ^ | + << >>
@@ -90,12 +95,14 @@ int tmin(void) {
   return 0x1<<31;
  
 }
+```
+
 解：32位int，二进制最小数Tmin=0x10000000。根据题目要求不能直接定义超过255的int，故用移位实现0x1<<31
 
 3.int isTmax(int x)
 
 题意：如果x是最大二进制数0x7fffffff，返回1；否则，返回0。
-
+```markdown
 /*
  * isTmax - returns 1 if x is the maximum, two's complement number,
  *     and 0 otherwise 
@@ -106,6 +113,7 @@ int tmin(void) {
 int isTmax(int x) {
 return (!(!(x+1)))&(!((x+1)^(~x)));
 }
+```
 解：
 
 发现：
@@ -121,7 +129,7 @@ Tmax+1=Tmin
 4.int negate(int x)
 
 题意：返回x的负数
-
+```markdown
 /* 
  * negate - return -x 
  *   Example: negate(1) = -1.
@@ -132,12 +140,13 @@ Tmax+1=Tmin
 int negate(int x) {
   return ~x+1;
 }
+```
 解：二进制负数为取反加一。即：~x+1。或减一取反，即~（x-1）
 
 5.int allOddBits(int x)
 
 题意：如果x二进制的奇数位都为1，则返回1
-
+```markdown
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
  *   where bits are numbered from 0 (least significant) to 31 (most significant)
@@ -152,6 +161,7 @@ int allOddBits(int x) {
           f=(f<<16)+f;
   return !((x&f)+(~f+1));
 }
+```
 解：
 
 注意！他的最低为为0，最高位为31，所以只要满足x&0xffffffff在0xaaaaaaaa位上都有1,即满足题意。因此得：（x&f）-f==0时，输出1。二进制尺度上，负号=~f+1，因此答案为：!((x&f)+(~f+1))
@@ -163,7 +173,7 @@ int allOddBits(int x) {
 6.int isAsciiDigit(int x)
 
 题意：如把x为ascii码编排下的0-9，0x30 <= x <= 0x39，返回1
-
+```markdown
 /* 
  * isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0' to '9')
  *   Example: isAsciiDigit(0x35) = 1.
@@ -176,6 +186,7 @@ int allOddBits(int x) {
 int isAsciiDigit(int x) {
   return !(x + ~0x30+1 >> 31) & !(0x39 + ~x+1 >> 31);
 }
+```
 解：
 
 题意得：x-0x30>=0 &&0x39-x>=0
@@ -185,7 +196,7 @@ int isAsciiDigit(int x) {
 7.int conditional(int x, int y, int z)
 
 题意：如果x！=0返回y，否则返回z
-
+```markdown
 /* 
  * conditional - same as x ? y : z 
  *   Example: conditional(2,4,5) = 4
@@ -197,6 +208,7 @@ int conditional(int x, int y, int z) {
  int f=~(!x)+1;
 return ~f&y|(f&z);
 }
+```
 解：
 
 x=true（！=0）时，!x=0，~（！x）=0xffffffff，加1后，f=0，输出y：~f&y。同理，x=False(=0)，f=0xffffffff，输出z： f&z。
@@ -206,7 +218,7 @@ x=true（！=0）时，!x=0，~（！x）=0xffffffff，加1后，f=0，输出y�
 8.int isLessOrEqual(int x, int y)
 
 题意：如果x<y.返回1；否则，返回0
-
+```markdown
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
  *   Example: isLessOrEqual(4,5) = 1.
@@ -223,6 +235,7 @@ int isLessOrEqual(int x, int y) {
   int nys=!ys;
   return (xs&nys)|(nxs&nys&ts)|(xs&ys&ts)|(!t);
 }
+```
 解：
 
 根据离散数学，列出对应的符号位真值表：
@@ -252,7 +265,7 @@ x y x-y result
 9.int logicalNeg(int x)
 
 题意：不使用！实现逻辑非。
-
+```markdown
 /* 
  * logicalNeg - implement the ! operator, using all of 
  *              the legal operators except !
@@ -265,6 +278,7 @@ int logicalNeg(int x) {
   int nx=~x+1;
   return ((~(x|nx))>>31)&1;
 }
+```
 解：
 
 考虑特殊的x，则其对应的二进制原码与补码（取反加1）为
@@ -298,7 +312,7 @@ Tmin         1         1           0
 10.int howManyBits(int x)
 
 题意：x最少可以用几位二进制补码表示
-
+```markdown
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
  *  Examples: howManyBits(12) = 5
@@ -338,6 +352,7 @@ int howManyBits(int x) {
  
   return h16+h8+h4+h2+h1+code+1;
 }
+```
 解：
 
 在计算机中，正数以原码存储，负数以补码存储。题目求原数据所需的补码的最小位数，则正数的求法为找到最高有效位，加上1位符号位，负数求得其原码（绝对值）的最高有效位后再加1位符号位。
@@ -351,7 +366,7 @@ int code = (s & ~x) | (~s & x);
 第二部分，float
 
 要求
-
+```markdown
 For the problems that require you to implement floating-point operations,
 the coding rules are less strict.  You are allowed to use looping and
 conditional control.  You are allowed to use both ints and unsigneds.
@@ -366,6 +381,7 @@ You are expressly forbidden to:
   5. Use any data type other than int or unsigned.  This means that you
      cannot use arrays, structs, or unions.
   6. Use any floating point data types, operations, or constants.
+```
 可以使用：while for if switch 等控制语句 unsigned ，int ，<,>,==等
 
 不可以使用：宏，函数，结构体，数组，联合等，除int ，unsigned外的类型
@@ -373,7 +389,7 @@ You are expressly forbidden to:
 11.unsigned floatScale2(unsigned uf)
 
 题意：返回2*f的值，传入和传出的数据都将按单精度浮点数的编码规则解释。
-
+```markdown
 /* 
  * floatScale2 - Return bit-level equivalent of expression 2*f for
  *   floating point argument f.
@@ -398,6 +414,7 @@ unsigned floatScale2(unsigned uf) {
   re= (uf&0x80000000) | (exp<<23) | frac;
   return re;
 }
+```
 解：
 
 传入一个无符号整数，将它转化为二进制，其二进制的含义为单精度实数的编码规则（s+exp+frac）。将该数乘二后，同样以单精度实数的编码规则负载于无符号整数上输出。
@@ -415,7 +432,7 @@ unsigned floatScale2(unsigned uf) {
 12.int floatFloat2Int(unsigned uf)
 
 题意：将uf强制转化为int类型输出
-
+```markdown
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
  *   for floating point argument f.
@@ -448,6 +465,7 @@ int floatFloat2Int(unsigned uf) {
     re=-re;
   return re
 }
+```
 解：
 
 要求将float转化为int，转化时，直接截掉小数部分，只保留float的·整数部分，分为以下几种情况。
@@ -470,7 +488,7 @@ e=exp-127  //（(2^(n-1）)-1）n为阶码的位数;
 13.unsigned floatPower2(int x)
 
 题意：返回2^x的值，返回的值按单精度编码规则解释。
-
+```markdown
 * /
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
  *   (2.0 raised to the power x) for any 32-bit integer x.
@@ -496,6 +514,7 @@ unsigned floatPower2(int x) {
   return re;
  
 }
+```
 解：
 
 输出2^x的二进制表示（依附于无符号）
@@ -503,6 +522,3 @@ unsigned floatPower2(int x) {
 Exp(阶码表示)-127=x（真实值）
 
 当exp（8位）为全1或更大时（exp>=255），输出+INF（无穷大），当exp（8位）为全0或更小时（exp<=0）输出0，其余情况exp不为0和不为全一，为规格化浮点数，frac为全0时，任有隐藏1，题目又是2的幂，因此将exp的值=二进制左移23位，将他放在浮点表示法的正确的位置即可。
-————————————————
-版权声明：本文为CSDN博主「流年孤鹜」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
-原文链接：https://blog.csdn.net/f1051690662/article/details/125750000
