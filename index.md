@@ -271,7 +271,7 @@ Void phase_2(char* receive) {
 num[0]=1,后面是前面的2倍，因此答案为1 2 4 8 16 32。
 
 ## phase_3
-```
+```markdown
 Dump of assembler code for function phase_3:
    0x0000000000400f43 <+0>:     sub    $0x18,%rsp
    0x0000000000400f47 <+4>:     lea    0xc(%rsp),%rcx
@@ -314,7 +314,7 @@ End of assembler dump.
 
 ```
 此题与phase_2类似，<+0>开辟空间，传进来的两个值存放在栈中，用<+4>rcx，<+9>rdx指向这两个值。<+14>发现常地址，查看 
-```
+```markdown
 (gdb) x /s 0x4025cf
 0x4025cf:       "%d %d"
 
@@ -328,7 +328,7 @@ End of assembler dump.
 ```
 结合<+19>给eax置0，调用<+24>sscanf函数，<+29>sscanf函数返回的值存储在eax中，与1比较。<+34>若小于1爆炸，否则继续。发现与phase_2套路一致，取传入的数需要大于两个，且只取前两个int类型数。
 
-```
+```markdown
 0x0000000000400f6a <+39>:    cmpl   $0x7,0x8(%rsp)
    0x0000000000400f6f <+44>:    ja     0x400fad <phase_3+106>
    0x0000000000400f71 <+46>:    mov    0x8(%rsp),%eax
@@ -338,13 +338,13 @@ End of assembler dump.
 ```
 <+39>将第一个数的值与7比，<+106>若大于爆炸，<+46>否则继续，将第一个数的值放入eax。因此第一个数值的范围为0-7。若小于0就往回跳了
 <+50>跳转到将eax的值*8加上地址0x402470后得到的新地址所对应的内存值。例若eax=1，则新地址为0x402478.查看其对应的内存值：
-```
+```markdown
 (gdb) x /a 0x402478
 0x402478:       0x400fb9 <phase_3+118>
 
 ```
 即跳转到0x400fb9
-```
+```markdown
 0x0000000000400fb9 <+118>:   mov    $0x137,%eax
    0x0000000000400fbe <+123>:   cmp    0xc(%rsp),%eax
    0x0000000000400fc2 <+127>:   je     0x400fc9 <phase_3+134>
@@ -358,7 +358,7 @@ End of assembler dump.
 如法炮制，所有答案有：0 207；1 311；2 707；3 256；4 389；5 206；6 682；7 327；
 
 ## phase_4
-```
+```markdown
 (gdb) disas phase_4
 Dump of assembler code for function phase_4:
    0x000000000040100c <+0>:     sub    $0x18,%rsp
@@ -395,7 +395,7 @@ End of assembler dump.
 <+34>~<+41>易知，第一个参数的值<15
 <+46>~<+60>得，edx=15，esi=0；edi存储传入的第一个数，也就是需要我们求的数。随后调用函数<func4>
 反汇编<func4>
-```
+```markdown
 (gdb) disas func4  
 
 Dump of assembler code for function func4:
@@ -445,7 +445,7 @@ End of assembler dump.
 故本题答案为7 0。
 	
 ## phase_5
-```
+```markdown
 (gdb) disas phase_5
 Dump of assembler code for function phase_5:
    0x0000000000401062 <+0>:     push   %rbx
@@ -495,14 +495,14 @@ End of assembler dump.
 开头与前几题一样，在<+8>设置了堆栈金丝雀保护。
 <+24>调用了< string_length >函数，根据函数名，与<+29>得：输入的是6个字符。<+34>否则爆炸。接下来来到了<+112>将eax置零后来到了<+41>。
 根据<+5>得rdi接受传入的第一个字符的地址，且rbx指向其。<+41>在此条开始之前，eax被置零了（+112），mov指令因此ecx=（rbx）。<+45>将ecx的低8位保存在rsp所指向的栈中。<+48>将该值(ecx的低8位)赋给rdx。<+52>获得rdx的低4位赋给edx。<+55>查看地址常量0x4024b0，发现如下：
-```
+```markdown
 (gdb) x /s 0x4024b0
 0x4024b0 <array.3449>:  "maduiersnfotvbylSo you think you can stop the bomb with ctrl-c, do you?"
 
 ```
 经历了<+52>的操作后，rdx∈【0，15】，因此<+55>中，地址范围在0x4024b0~0x4024bf， 对应的edx值为“maduiersnfotvbyl“中的一个，取决于rdx的值。分析<+62>~<+74>发现这是一个循环，计数器为rax，总共执行六次。<+62>把edx的低8位存入栈，构建为一个数组。<+76>执行六次后在字符串末尾填“0”。<+81>查看常地址0x40245e，
 	
-```
+```markdown
 (gdb) x /s 0x40245e
 0x40245e:       "flyers"
 
