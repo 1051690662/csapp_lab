@@ -203,7 +203,7 @@ if （re<5）
    0x0000000000400f3a <+62>:    jmp    0x400f17 <phase_2+27>
 ```
 此时rsp的栈为
-![image1](https://github.com/1051690662/csapp_lab/blob/gh-pages/11.jpg?raw=true)
+![image1](https://s1.328888.xyz/2022/08/03/OiS6R.jpg)
 <+14>若rsp指向的内存值为1，<+52>则跳转，否则，<+20>爆炸。
 
 ```markdown
@@ -212,7 +212,7 @@ if （re<5）
 
 ```
 此时，指向为
-![image2](https://github.com/1051690662/csapp_lab/blob/gh-pages/22.jpg?raw=true)
+![image2](https://s1.328888.xyz/2022/08/03/OiS6R.jpghttps://s1.328888.xyz/2022/08/03/OieVP.jpg)
 注：c中不检查数组下标越界，因此rbp可以指向num[6]。
 
 ```markdown
