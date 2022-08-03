@@ -1,7 +1,9 @@
 ## csapp lab2 bomb 《深入理解计算机系统》0基础超详细解析
 ### 总览
 总共有六个炸弹，需要我们一一拆除。题目提供了可执行文件bomb与bomb.c，.c文件中只提供了主函数。
-## phase_6
+[phase_1](#1)
+[phase_6](#6)
+<a id="1"></a> 
 ## phase_1
 ```markdown
 /* Hmm...  Six phases must be more secure than one phase! */
@@ -520,6 +522,7 @@ End of assembler dump.
 第六个字：G W g w
 只需将上述每个字符中任选一个，拼合即为正确答案。如：ionefg为一个答案。
 
+<a id="6"></a> 
 ## phase_6
 ```markdown
 (gdb) disas phase_6 
