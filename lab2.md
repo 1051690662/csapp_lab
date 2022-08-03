@@ -1,8 +1,20 @@
 ## csapp lab2 bomb 《深入理解计算机系统》0基础超详细解析
 ### 总览
 总共有六个炸弹，需要我们一一拆除。题目提供了可执行文件bomb与bomb.c，.c文件中只提供了主函数。
+<br>
 [phase_1](#1)
+<br>
+[phase_2](#2)
+<br>
+[phase_3](#3)
+<br>
+[phase_4](#4)
+<br>
+[phase_5](#5)
+<br>
 [phase_6](#6)
+<br>
+[phase_secret](#7)
 <a id="1"></a> 
 ## phase_1
 ```markdown
@@ -48,6 +60,7 @@ Border relations with Canada have never been better.
 Phase 1 defused. How about the next one?
 ```
 正确！
+<a id="2"></a> 
 ## phase_2
 反汇编phase_2得：
 ```markdown
@@ -272,7 +285,7 @@ Void phase_2(char* receive) {
 }
 ```
 num[0]=1,后面是前面的2倍，因此答案为1 2 4 8 16 32。
-
+<a id="3"></a>
 ## phase_3
 ```markdown
 Dump of assembler code for function phase_3:
@@ -359,7 +372,7 @@ End of assembler dump.
 <+118>将0x137赋值给eax，<+123>比较传入的第二个数是否与其相等,若相等，<+134>则释放函数空间，<+138>返回；<+129>否则爆炸。因此，其中一组答案为：
 1 311
 如法炮制，所有答案有：0 207；1 311；2 707；3 256；4 389；5 206；6 682；7 327；
-
+<a id="4"></a>
 ## phase_4
 ```markdown
 (gdb) disas phase_4
@@ -446,7 +459,7 @@ End of assembler dump.
 此后返回函数phase_4
 <+65>~<+85>易知：第二个参数为0。
 故本题答案为7 0。
-	
+<a id="5"></a>
 ## phase_5
 ```markdown
 (gdb) disas phase_5
@@ -867,7 +880,7 @@ else
 因此dizhi[0]=&node[3]，dizhi[1]=&node[4] ，dizhi[2]=&node[5] ，dizhi[3]=&node[6] ，dizhi[4]=&node[1] ，dizhi[5]=&node[2]。
 根据第三部分知道，dizhi数组的值是通过以num数组的值做偏移量，在0x6032d0为基址不断解引得来的。因此num[i]的值决定了dizhi[i]存储的是第几个node。因此num[0]=3，num[1]=4，num[2]=5，num[3]=6，num[4]=1，num[5]=2。到此为止，仍不是最初答案，该部分是经历了第二部分后的值，所以要还原最初的值，还需要用7减。因此最开始的值为num[6]={4,3,2,1,6,5}。
 故最终答案为4 3 2 1 6 5。
-
+<a id="7"></a>
 ## secret_phase
 在bomb.c中我们发现，每一个phase完成后都调用了phase_defused函数。我们反汇编它。
 ```markdown
