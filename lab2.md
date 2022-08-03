@@ -212,7 +212,7 @@ if （re<5）
 
 ```
 此时，指向为
-![image2](https://s1.328888.xyz/2022/08/03/OiS6R.jpghttps://s1.328888.xyz/2022/08/03/OieVP.jpg)
+![image2](https://imgloc.com/i/OieVP)
 注：c中不检查数组下标越界，因此rbp可以指向num[6]。
 
 ```markdown
