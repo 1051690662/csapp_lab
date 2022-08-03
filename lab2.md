@@ -1,6 +1,7 @@
 ## csapp lab2 bomb 《深入理解计算机系统》0基础超详细解析
 ### 总览
 总共有六个炸弹，需要我们一一拆除。题目提供了可执行文件bomb与bomb.c，.c文件中只提供了主函数。
+## phase_6
 ## phase_1
 ```markdown
 /* Hmm...  Six phases must be more secure than one phase! */
@@ -864,5 +865,249 @@ else
 根据第三部分知道，dizhi数组的值是通过以num数组的值做偏移量，在0x6032d0为基址不断解引得来的。因此num[i]的值决定了dizhi[i]存储的是第几个node。因此num[0]=3，num[1]=4，num[2]=5，num[3]=6，num[4]=1，num[5]=2。到此为止，仍不是最初答案，该部分是经历了第二部分后的值，所以要还原最初的值，还需要用7减。因此最开始的值为num[6]={4,3,2,1,6,5}。
 故最终答案为4 3 2 1 6 5。
 
+## secret_phase
+在bomb.c中我们发现，每一个phase完成后都调用了phase_defused函数。我们反汇编它。
+```markdown
+(gdb) disas phase_defused
+Dump of assembler code for function phase_defused:
+   0x00000000004015c4 <+0>:     sub    $0x78,%rsp
+   0x00000000004015c8 <+4>:     mov    %fs:0x28,%rax
+   0x00000000004015d1 <+13>:    mov    %rax,0x68(%rsp)
+   0x00000000004015d6 <+18>:    xor    %eax,%eax
+   0x00000000004015d8 <+20>:    cmpl   $0x6,0x202181(%rip)        # 0x603760 <num_input_strings>
+   0x00000000004015df <+27>:    jne    0x40163f <phase_defused+123>
+   0x00000000004015e1 <+29>:    lea    0x10(%rsp),%r8
+   0x00000000004015e6 <+34>:    lea    0xc(%rsp),%rcx
+   0x00000000004015eb <+39>:    lea    0x8(%rsp),%rdx
+   0x00000000004015f0 <+44>:    mov    $0x402619,%esi
+
+   0x00000000004015f5 <+49>:    mov    $0x603870,%edi
+   0x00000000004015fa <+54>:    call   0x400bf0 <__isoc99_sscanf@plt>
+   0x00000000004015ff <+59>:    cmp    $0x3,%eax
+   0x0000000000401602 <+62>:    jne    0x401635 <phase_defused+113>
+   0x0000000000401604 <+64>:    mov    $0x402622,%esi
+   0x0000000000401609 <+69>:    lea    0x10(%rsp),%rdi
+   0x000000000040160e <+74>:    call   0x401338 <strings_not_equal>
+   0x0000000000401613 <+79>:    test   %eax,%eax
+   0x0000000000401615 <+81>:    jne    0x401635 <phase_defused+113>
+   0x0000000000401617 <+83>:    mov    $0x4024f8,%edi
+--Type <RET> for more, q to quit, c to continue without paging--
+   0x000000000040161c <+88>:    call   0x400b10 <puts@plt>
+   0x0000000000401621 <+93>:    mov    $0x402520,%edi
+   0x0000000000401626 <+98>:    call   0x400b10 <puts@plt>
+   0x000000000040162b <+103>:   mov    $0x0,%eax
+   0x0000000000401630 <+108>:   call   0x401242 <secret_phase>
+   0x0000000000401635 <+113>:   mov    $0x402558,%edi
+   0x000000000040163a <+118>:   call   0x400b10 <puts@plt>
+   0x000000000040163f <+123>:   mov    0x68(%rsp),%rax
+   0x0000000000401644 <+128>:   xor    %fs:0x28,%rax
+   0x000000000040164d <+137>:   je     0x401654 <phase_defused+144>
+   0x000000000040164f <+139>:   call   0x400b30 <__stack_chk_fail@plt>
+   0x0000000000401654 <+144>:   add    $0x78,%rsp
+   0x0000000000401658 <+148>:   ret    
+End of assembler dump.
+```
+①	<+20>判断6个phase是否都被拆除。
+查看第一个出现的常地址②
+```markdown
+(gdb) x /s 0x402619
+0x402619:       "%d %d %s"
+```
+为传入数据的格式。
+
+<+54>根据前题可知，<__isoc99_sscanf@plt>函数会返回输入数据的个数（空格为界），<+59>若不为3，跳转到<+113>，若为3，到<+64>。查看
+<+113>
+```markdown
+(gdb) x /s 0x402558
+0x402558:       "Congratulations! You've defused the bomb!"
+```
+发现，为通关后的提示符。
+<+64>
+```markdown
+(gdb) x /s 0x402622
+0x402622:       "DrEvil"
+```
+<+74>~<+81>判断传入的%s是否等于“DrEvil”③
+<+83>
+```markdown
+(gdb) x /s 0x4024f8
+0x4024f8:       "Curses, you've found the secret phase!"
+```
+<+88>输出
+```markdown
+x /s 0x402520
+0x402520:       "But finding it and solving it are quite different..."
+```
+<+98>输出
+<+108>调用secret_phase
+综上发现，<+88><+98>为成功进入secret phase的提示，这就说明，进入secret phase需要完成6个phase后（①），且输入格式为%d %d %s（②），当%s==DrEvil时（③）方可进入。
+因此，进入的密匙需要在解除前面6个phase时输入。我们发现，phase_3和phase_4都有类似%d %d的输入，因此经过尝试后发现，当我们在phase_4后加入DrEvil，（不知道为什么在phase_3后加不行）完成所有phase后即可进入secret phase。
+查看secret_phase。
+```markdown
+(gdb) disas secret_phase
+Dump of assembler code for function secret_phase:
+   0x0000000000401242 <+0>:     push   %rbx
+   0x0000000000401243 <+1>:     call   0x40149e <read_line>
+   0x0000000000401248 <+6>:     mov    $0xa,%edx
+   0x000000000040124d <+11>:    mov    $0x0,%esi
+   0x0000000000401252 <+16>:    mov    %rax,%rdi
+   0x0000000000401255 <+19>:    call   0x400bd0 <strtol@plt>
+   0x000000000040125a <+24>:    mov    %rax,%rbx
+   0x000000000040125d <+27>:    lea    -0x1(%rax),%eax
+   0x0000000000401260 <+30>:    cmp    $0x3e8,%eax
+   0x0000000000401265 <+35>:    jbe    0x40126c <secret_phase+42>
+   0x0000000000401267 <+37>:    call   0x40143a <explode_bomb>
+   0x000000000040126c <+42>:    mov    %ebx,%esi
+   0x000000000040126e <+44>:    mov    $0x6030f0,%edi
+   0x0000000000401273 <+49>:    call   0x401204 <fun7>
+   0x0000000000401278 <+54>:    cmp    $0x2,%eax
+   0x000000000040127b <+57>:    je     0x401282 <secret_phase+64>
+   0x000000000040127d <+59>:    call   0x40143a <explode_bomb>
+   0x0000000000401282 <+64>:    mov    $0x402438,%edi
+   0x0000000000401287 <+69>:    call   0x400b10 <puts@plt>
+   0x000000000040128c <+74>:    call   0x4015c4 <phase_defused>
+--Type <RET> for more, q to quit, c to continue without paging--
+   0x0000000000401291 <+79>:    pop    %rbx
+   0x0000000000401292 <+80>:    ret    
+End of assembler dump.
+```
+<+1>读入
+<+19>不知道干啥
+<+27>~<+37>输入的数据经<strtol@plt>转换后不能大于0x3e9
+<+44>查看
+```markdown
+0x6030f0 <n1>:  0x00000024      0x00000000      0x00603110      0x00000000
+0x603100 <n1+16>:       0x00603130      0x00000000      0x00000000      0x00000000
+0x603110 <n21>: 0x00000008      0x00000000      0x00603190      0x00000000
+0x603120 <n21+16>:      0x00603150      0x00000000      0x00000000      0x00000000
+0x603130 <n22>: 0x00000032      0x00000000      0x00603170      0x00000000
+0x603140 <n22+16>:      0x006031b0      0x00000000      0x00000000      0x00000000
+0x603150 <n32>: 0x00000016      0x00000000      0x00603270      0x00000000
+0x603160 <n32+16>:      0x00603230      0x00000000      0x00000000      0x00000000
+0x603170 <n33>: 0x0000002d      0x00000000      0x006031d0      0x00000000
+0x603180 <n33+16>:      0x00603290      0x00000000      0x00000000      0x00000000
+0x603190 <n31>: 0x00000006      0x00000000      0x006031f0      0x00000000
+0x6031a0 <n31+16>:      0x00603250      0x00000000      0x00000000      0x00000000
+0x6031b0 <n34>: 0x0000006b      0x00000000      0x00603210      0x00000000
+0x6031c0 <n34+16>:      0x006032b0      0x00000000      0x00000000      0x00000000
+--Type <RET> for more, q to quit, c to continue without paging--
+0x6031d0 <n45>: 0x00000028      0x00000000      0x00000000      0x00000000
+0x6031e0 <n45+16>:      0x00000000      0x00000000      0x00000000      0x00000000
+0x6031f0 <n41>: 0x00000001      0x00000000      0x00000000      0x00000000
+0x603200 <n41+16>:      0x00000000      0x00000000      0x00000000      0x00000000
+0x603210 <n47>: 0x00000063      0x00000000      0x00000000      0x00000000
+0x603220 <n47+16>:      0x00000000      0x00000000      0x00000000      0x00000000
+0x603230 <n44>: 0x00000023      0x00000000      0x00000000      0x00000000
+0x603240 <n44+16>:      0x00000000      0x00000000      0x00000000      0x00000000
+0x603250 <n42>: 0x00000007      0x00000000      0x00000000      0x00000000
+0x603260 <n42+16>:      0x00000000      0x00000000      0x00000000      0x00000000
+0x603270 <n43>: 0x00000014      0x00000000      0x00000000      0x00000000
+0x603280 <n43+16>:      0x00000000      0x00000000      0x00000000      0x00000000
+0x603290 <n46>: 0x0000002f      0x00000000      0x00000000      0x00000000
+0x6032a0 <n46+16>:      0x00000000      0x00000000      0x00000000      0x00000000
+--Type <RET> for more, q to quit, c to continue without paging--
+0x6032b0 <n48>: 0x000003e9      0x00000000      0x00000000      0x00000000
+0x6032c0 <n48+16>:      0x00000000      0x00000000      0x00000000      0x00000000
+```
+发现，为一颗搜索树（下图值以16进制表示），
+[![image1](https://s1.328888.xyz/2022/08/03/OdJfU.jpg)](https://imgloc.com/i/OdJfU)
+结构为
+```markdown
+struct _node{
+    int val;
+    struct _node* left;
+struct _node* right;   
+}
+```
+<+49>~<+57>发现，经过fun7函数后，该返回值为2时，成功破解。
+接下来反汇编fun7
+```markdown
+gdb) disas fun7
+Dump of assembler code for function fun7:
+   0x0000000000401204 <+0>:     sub    $0x8,%rsp
+   0x0000000000401208 <+4>:     test   %rdi,%rdi
+   0x000000000040120b <+7>:     je     0x401238 <fun7+52>
+   0x000000000040120d <+9>:     mov    (%rdi),%edx
+   0x000000000040120f <+11>:    cmp    %esi,%edx
+   0x0000000000401211 <+13>:    jle    0x401220 <fun7+28>
+   0x0000000000401213 <+15>:    mov    0x8(%rdi),%rdi
+   0x0000000000401217 <+19>:    call   0x401204 <fun7>
+   0x000000000040121c <+24>:    add    %eax,%eax
+   0x000000000040121e <+26>:    jmp    0x40123d <fun7+57>
+   0x0000000000401220 <+28>:    mov    $0x0,%eax
+   0x0000000000401225 <+33>:    cmp    %esi,%edx
+   0x0000000000401227 <+35>:    je     0x40123d <fun7+57>
+   0x0000000000401229 <+37>:    mov    0x10(%rdi),%rdi
+   0x000000000040122d <+41>:    call   0x401204 <fun7>
+   0x0000000000401232 <+46>:    lea    0x1(%rax,%rax,1),%eax
+   0x0000000000401236 <+50>:    jmp    0x40123d <fun7+57>
+   0x0000000000401238 <+52>:    mov    $0xffffffff,%eax
+   0x000000000040123d <+57>:    add    $0x8,%rsp
+   0x0000000000401241 <+61>:    ret    
+--Type <RET> for more, q to quit, c to continue without paging--
+End of assembler dump.
+```
+此部分雷同phase_6，此处不赘述，功能等价为以下
+```markdown
+#include<stdio.h>
+typedef struct _node{
+    int val;
+    struct _node* left;
+    struct _node* right;   
+}Node;
+int fun7(Node* p,int t);
+int main(){
+    Node a[15];
+    for (int i=0;i<=6;i++){
+        a[i].left=&a[i*2+1];
+        a[i].right=&a[i*2+2];
+    };
+    for (int i=7;i<=14;i++){
+        a[i].left=NULL;
+        a[i].right=NULL;
+    };
+    a[0].val=0x24;
+    a[1].val=0x8;
+    a[2].val=0x32;
+    a[3].val=0x6;
+    a[4].val=0x16;
+    a[5].val=0x2d;
+    a[6].val=0x6b;
+    a[7].val=0x1;
+    a[8].val=0x7;
+    a[9].val=0x14;
+    a[10].val=0x23;
+    a[11].val=0x28;
+    a[12].val=0x2f;
+    a[13].val=0x63;
+    a[14].val=0x3e9;
+    int t=;
+    int re;
+    Node* p=&a[0];
+    re=fun7(p,t);
+    printf("%d",re);
+    return 0;
+}
+
+    int fun7(Node* p,int t){
+    if(!p)
+        return -1;
+    if(p->val<=t){
+        if(p->val==t)
+            return 0;
+         p=p->right;
+        return 2*fun7(p,t)+1;
+    }
+    else{
+        p=p->left;
+        return 2*fun7(p,t);
+    }
+    
+}
+```
+其中，t为我们需要传入的值。我们发现，fun7为递归函数，作用是在平衡二叉搜索树(right节点的值大于self，left节点小于self)中查找我们的输入值t，返回的是它查找的过程(向左向右的次数与顺序)。当t大于等于当前节点时，向右查找，小于时向左查找。向右时*2+1，向左时*2。<+11>查找的值一定比0x24小。函数栈调用图如下，
+[![inmage2](https://s1.328888.xyz/2022/08/03/Od72P.jpg)](https://imgloc.com/i/Od72P)。因此答案一：向左一次，向右一次找到了，答案为0x16=22。因此答案二：向左一次，向右一次，向左一次找到了，答案为0x14=20。
+或者根据伪代码暴力循环破解（<1001），只有值为20或22时，返回值为2。
+综上答案为20或22。
 
 
