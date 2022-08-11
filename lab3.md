@@ -188,7 +188,7 @@ void touch3(char *sval)
 ```markdown
 movq $0x5561dca8,%rdi
 pushq $0x4018fa
-ret注入字符的16进制表示应为
+ret
 ```
 因此注入字符的16进制为
 ```markdown
