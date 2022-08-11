@@ -219,7 +219,7 @@ if （re<5）
    0x0000000000400f3a <+62>:    jmp    0x400f17 <phase_2+27>
 ```
 此时rsp的栈为
-![l21](https://s1.328888.xyz/2022/08/03/OiS6R.jpg)
+![l21]([https://s1.328888.xyz/2022/08/03/OiS6R.jpg](https://img-blog.csdnimg.cn/c16336c405714f299d08dbdb3eaad889.jpeg))
 <+14>若rsp指向的内存值为1，<+52>则跳转，否则，<+20>爆炸。
 
 ```markdown
@@ -228,7 +228,7 @@ if （re<5）
 
 ```
 此时，指向为
-![l22](https://s1.ax1x.com/2022/08/03/vZfRit.jpg)
+![l22](https://img-blog.csdnimg.cn/2ef5c76cfa4b4e81834c887f9de477eb.png)
 注：c中不检查数组下标越界，因此rbp可以指向num[6]。
 
 ```markdown
@@ -1026,7 +1026,7 @@ End of assembler dump.
 0x6032c0 <n48+16>:      0x00000000      0x00000000      0x00000000      0x00000000
 ```
 发现，为一颗搜索树（下图值以16进制表示），
-[![l23](https://s1.328888.xyz/2022/08/03/OdJfU.jpg)](https://imgloc.com/i/OdJfU)
+![l23](https://img-blog.csdnimg.cn/a1c10732f00d42f682292b39b0d2bdb5.jpeg)
 结构为
 ```markdown
 struct _node{
@@ -1122,7 +1122,7 @@ int main(){
 }
 ```
 其中，t为我们需要传入的值。我们发现，fun7为递归函数，作用是在平衡二叉搜索树(right节点的值大于self，left节点小于self)中查找我们的输入值t，返回的是它查找的过程(向左向右的次数与顺序)。当t大于等于当前节点时，向右查找，小于时向左查找。向右时*2+1，向左时*2。<+11>查找的值一定比0x24小。函数栈调用图如下，
-[![l24](https://s1.328888.xyz/2022/08/03/Od72P.jpg)](https://imgloc.com/i/Od72P)。因此答案一：向左一次，向右一次找到了，答案为0x16=22。因此答案二：向左一次，向右一次，向左一次找到了，答案为0x14=20。
+![l24](https://img-blog.csdnimg.cn/f69ea277ad3b44619315156faf989efa.jpeg)。因此答案一：向左一次，向右一次找到了，答案为0x16=22。因此答案二：向左一次，向右一次，向左一次找到了，答案为0x14=20。
 或者根据伪代码暴力循环破解（<1001），只有值为20或22时，返回值为2。
 综上答案为20或22。
 
