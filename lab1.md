@@ -1,4 +1,4 @@
-# csapp lab1 datalab 0基础超详细解
+# csapp lab1 datalab 0基础超详细解 
 ## 系列目录
 [lab1 data](https://1051690662.github.io/csapp_lab/lab1)
 <br /> 
@@ -530,3 +530,4 @@ unsigned floatPower2(int x) {
 Exp(阶码表示)-127=x（真实值）
 
 当exp（8位）为全1或更大时（exp>=255），输出+INF（无穷大），当exp（8位）为全0或更小时（exp<=0）输出0，其余情况exp不为0和不为全一，为规格化浮点数，frac为全0时，任有隐藏1，题目又是2的幂，因此将exp的值=二进制左移23位，将他放在浮点表示法的正确的位置即可。
+by:x_n
