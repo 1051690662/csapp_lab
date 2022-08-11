@@ -1,7 +1,7 @@
 # csapp lab1 datalab 超详细0基础解析
 ## 总体概览
 
-![image1](https://s1.328888.xyz/2022/08/03/Oiywd.png)
+![l11](https://s1.328888.xyz/2022/08/03/Oiywd.png)
 
 ## 第一部分，integer
 
