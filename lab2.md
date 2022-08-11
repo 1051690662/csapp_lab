@@ -1,4 +1,11 @@
-## csapp lab2 bomb 《深入理解计算机系统》0基础超详细解析
+# csapp lab2 bomb 0基础超详细解
+## 系列目录
+[lab1 data](https://1051690662.github.io/csapp_lab/lab1)
+<br/> 
+[lab2 bomb](https://1051690662.github.io/csapp_lab/lab2)
+<br/> 
+[lab3 attack](https://1051690662.github.io/csapp_lab/lab3)
+<br/> 
 ### 总览
 总共有六个炸弹，需要我们一一拆除。题目提供了可执行文件bomb与bomb.c，.c文件中只提供了主函数。我们需要反汇编bomb，从而推算出每一个phase的破解密码。
 <br>
