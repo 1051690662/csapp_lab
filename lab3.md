@@ -39,7 +39,7 @@ Dump of assembler code for function getbuf:
 End of assembler dump.
 ```
 <+0>发现该函数开辟了40字节的空间，而Gets函数没有输入字符的判定，因此可输入40个字符。
-![c1](https://github.com/1051690662/csapp_lab/blob/gh-pages/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20220805211352.jpg?raw=true)
+![l3c1](https://img-blog.csdnimg.cn/d52eb9f4972449098529c3903fd2cb55.jpeg)
 Gets函数不限制输入格数，我们只要将输入的数据覆盖函数返回值处的地址即可到达touch1。查看touch1的地址
 ```markdown
 (gdb) disas touch1
@@ -154,7 +154,7 @@ ec 17 40 00 c3 00 00 00
 78 dc 61 55  
 ```
 后续操作与leve1相同，不赘述。
-![c2]( https://raw.githubusercontent.com/1051690662/csapp_lab/gh-pages/c2.jpg)
+![l3c2](https://img-blog.csdnimg.cn/35470d307cad4a6789a85bbc5117c69e.jpeg)
 
 ## phase 3
 已知，题目要求：跳转到touch3，并完成cookie验证
@@ -241,7 +241,7 @@ unix> objdump -d *.o > *.d
 		<+3>C3 ret
         <+4>C3 ret
 ```
-![r1]( https://github.com/1051690662/csapp_lab/blob/gh-pages/r1.jpg?raw=true)
+![l3r1](https://img-blog.csdnimg.cn/8ea2afff29ad4531a7164f231f852aef.jpeg)
 而我们只能通过getbuf的溢出实现。现在以无法在getbuf的栈帧中注入代码且执行，我们要利用程序已有的函数进行攻击。
 我们在getbuf栈帧起始位置注入完毕后，getbuf函数要返回时(运行到ret处①，空间已释放add 0x28 0->①，%rsp指向test的栈帧顶)，我们想要执行pop rax的操作。因此在存储ret返回地址处①我们需要其跳转到一个gadget，根据以上，此处值应为0x4019ab。Getbuf的Ret执行后发生了：pop %rip;此时rsp指向了②。程序跳转到0x4019ab<+0>开始执行pop rax。此时rax=②处的值，因此②处的值应为我们的cookie：0x596997fa，rsp=③。在执行到<+6>ret时，此时rip=③处的值，rsp=④。接下来我们要执行mov rax,rdi。通过上述我们发现，有两个函数可以满足，任选其一即可。因此③处的值应为0x4019a2或0x4019c5。在执行ret时，弹出栈顶，程序运行④处值的地址，因此④处的值为0x4017ec(touch2函数的地址)。综上，我们注入的代码（已经破坏了test的栈帧和其之前的原始数据）转化为16进制为
 ```markdown
